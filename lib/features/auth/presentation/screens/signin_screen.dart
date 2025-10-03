@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
-class SigningScreen extends StatefulWidget {
-  const SigningScreen({super.key});
+class SigninScreen extends StatefulWidget {
+  const SigninScreen({super.key});
 
   @override
-  State<SigningScreen> createState() => _SigningScreenState();
+  State<SigninScreen> createState() => _SigninScreenState();
 }
 
-class _SigningScreenState extends State<SigningScreen> {
+class _SigninScreenState extends State<SigninScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool _obscurePassword = true;
@@ -26,12 +26,10 @@ class _SigningScreenState extends State<SigningScreen> {
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0),
+            padding: const EdgeInsets.only(right: 51, left: 51, top: 133),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const SizedBox(height: 80),
-
                 // Title
                 const Text(
                   'Sign In',
@@ -207,7 +205,7 @@ class _SigningScreenState extends State<SigningScreen> {
                   ],
                 ),
 
-                const SizedBox(height: 32),
+                const SizedBox(height: 48),
 
                 // Sign up link
                 Row(
