@@ -1,6 +1,5 @@
 import 'package:brisa_supply_chain/features/auth/presentation/screens/onboarding_screen.dart';
-import 'package:brisa_supply_chain/features/auth/presentation/screens/signin_screen.dart';
-import 'package:brisa_supply_chain/features/auth/presentation/screens/signup_screen.dart';
+import 'package:brisa_supply_chain/features/home/presentation/screens/home_screen.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -18,7 +17,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: const OnboardingScreen(),
+      home: const HomeScreen(),
     );
   }
 }
