@@ -1,3 +1,4 @@
+import 'package:brisa_supply_chain/features/auth/presentation/screens/signup_screen.dart';
 import 'package:flutter/material.dart';
 
 class SigninScreen extends StatefulWidget {
@@ -217,7 +218,12 @@ class _SigninScreenState extends State<SigninScreen> {
                     ),
                     GestureDetector(
                       onTap: () {
-                        // Navigate to sign up
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute<void>(
+                            builder: (context) => const SignupScreen(),
+                          ),
+                        );
                       },
                       child: const Text(
                         'Daftar',

@@ -1,5 +1,6 @@
-// home_screen.dart
+// ignore_for_file: deprecated_member_use
 
+import 'package:brisa_supply_chain/core/usecases/colors.dart';
 import 'package:flutter/material.dart';
 
 // --- Models (Simplified for this example) ---
@@ -435,18 +436,21 @@ class _BottomNavBar extends StatelessWidget {
           ),
         ],
       ),
-      child: BottomNavigationBar(
-        elevation: 0,
-        backgroundColor: Colors.transparent,
-        currentIndex: 0,
-        selectedItemColor: const Color(0xFF673AB7), // Purple for selected item
-        unselectedItemColor: Colors.grey,
-        showUnselectedLabels: true,
-        type: BottomNavigationBarType.fixed,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
-        ],
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 60),
+        child: BottomNavigationBar(
+          elevation: 0,
+          backgroundColor: Colors.transparent,
+          currentIndex: 0,
+          selectedItemColor: AppColors.primary,
+          unselectedItemColor: Colors.grey,
+          showUnselectedLabels: true,
+          type: BottomNavigationBarType.fixed,
+          items: const [
+            BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+            BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
+          ],
+        ),
       ),
     );
   }

@@ -1,5 +1,8 @@
 // ignore_for_file: deprecated_member_use
 
+import 'package:brisa_supply_chain/features/auth/presentation/screens/signin_screen.dart';
+import 'package:brisa_supply_chain/features/auth/presentation/widgets/sign_up_dialog_widget.dart';
+import 'package:brisa_supply_chain/features/home/presentation/screens/home_screen.dart';
 import 'package:flutter/material.dart';
 
 class OnboardingScreen extends StatelessWidget {
@@ -69,8 +72,25 @@ class OnboardingScreen extends StatelessWidget {
                   height: 56,
                   child: ElevatedButton(
                     onPressed: () {
-                      // Navigate to next screen
-                      // Navigator.push(context, MaterialPageRoute(builder: (context) => NextScreen()));
+                      SignUpDialogWidget.show(
+                        context,
+                        onYesPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute<void>(
+                              builder: (context) => const SigninScreen(),
+                            ),
+                          );
+                        },
+                        onNoPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute<void>(
+                              builder: (context) => const HomeScreen(),
+                            ),
+                          );
+                        },
+                      );
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF8B5CF6),

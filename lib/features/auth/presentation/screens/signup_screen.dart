@@ -1,3 +1,4 @@
+import 'package:brisa_supply_chain/features/auth/presentation/screens/signin_screen.dart';
 import 'package:flutter/material.dart';
 
 class SignupScreen extends StatefulWidget {
@@ -186,15 +187,20 @@ class _SignupScreenState extends State<SignupScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     const Text(
-                      'Belum punya akun? ',
+                      'Sudah punya akun? ',
                       style: TextStyle(fontSize: 14, color: Color(0xFF6B7280)),
                     ),
                     GestureDetector(
                       onTap: () {
-                        // Navigate to sign up
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute<void>(
+                            builder: (context) => const SigninScreen(),
+                          ),
+                        );
                       },
                       child: const Text(
-                        'Daftar',
+                        'Sign In',
                         style: TextStyle(
                           fontSize: 14,
                           color: Color(0xFFA855F7),
