@@ -104,7 +104,7 @@ class OnboardingScreen extends StatelessWidget {
                       'Lanjutkan',
                       style: TextStyle(
                         fontSize: 18,
-                        fontWeight: FontWeight.w600,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
