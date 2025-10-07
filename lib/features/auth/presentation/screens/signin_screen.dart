@@ -1,3 +1,4 @@
+import 'package:brisa_supply_chain/core/usecases/colors.dart';
 import 'package:brisa_supply_chain/features/auth/presentation/screens/signup_screen.dart';
 import 'package:flutter/material.dart';
 
@@ -65,13 +66,38 @@ class _SigninScreenState extends State<SigninScreen> {
                     ),
                     filled: true,
                     fillColor: const Color(0xFFF9FAFB),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide.none,
-                    ),
                     contentPadding: const EdgeInsets.symmetric(
                       horizontal: 16,
                       vertical: 16,
+                    ),
+
+                    // 1. Base Border for all states when not focused or in error
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(
+                        color: Color(
+                          0xFFE5E7EB,
+                        ), // Light grey color for general border
+                        width: 1.0,
+                      ),
+                    ),
+
+                    // 2. Enabled Border: Visible when not focused, but interactable
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(
+                        color: Color(0xFFE5E7EB), // Light grey border
+                        width: 1.0,
+                      ),
+                    ),
+
+                    // 3. Focused Border: Prominently visible when the user clicks/taps to type (focus)
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(
+                        color: AppColors.primary,
+                        width: 2.0, // Make it thicker to emphasize focus
+                      ),
                     ),
                   ),
                 ),
@@ -100,14 +126,40 @@ class _SigninScreenState extends State<SigninScreen> {
                     ),
                     filled: true,
                     fillColor: const Color(0xFFF9FAFB),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide.none,
-                    ),
+
                     contentPadding: const EdgeInsets.symmetric(
                       horizontal: 16,
                       vertical: 16,
                     ),
+                    // 1. Base Border for all states when not focused or in error
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(
+                        color: Color(
+                          0xFFE5E7EB,
+                        ), // Light grey color for general border
+                        width: 1.0,
+                      ),
+                    ),
+
+                    // 2. Enabled Border: Visible when not focused, but interactable
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(
+                        color: Color(0xFFE5E7EB), // Light grey border
+                        width: 1.0,
+                      ),
+                    ),
+
+                    // 3. Focused Border: Prominently visible when the user clicks/taps to type (focus)
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                        color: AppColors.primary,
+                        width: 2.0, // Make it thicker to emphasize focus
+                      ),
+                    ),
+
                     suffixIcon: IconButton(
                       icon: Icon(
                         _obscurePassword
