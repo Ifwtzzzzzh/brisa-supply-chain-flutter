@@ -1,6 +1,7 @@
 // ignore_for_file: deprecated_member_use
 
 import 'package:brisa_supply_chain/core/usecases/colors.dart';
+import 'package:brisa_supply_chain/features/home/presentation/widgets/bottom_nav_widget.dart';
 import 'package:flutter/material.dart';
 
 // --- Models (Simplified for this example) ---
@@ -114,7 +115,7 @@ class HomeScreen extends StatelessWidget {
         ),
       ),
       // 6. Bottom Navigation Bar (Simplified)
-      bottomNavigationBar: const _BottomNavBar(),
+      bottomNavigationBar: const BottomNavWidget(currentIndex: 0),
     );
   }
 }
@@ -135,15 +136,14 @@ class _UserGreeting extends StatelessWidget {
           height: 40,
           decoration: BoxDecoration(
             color: Colors.purple.shade100,
-            borderRadius: BorderRadius.circular(100),
-            // image: const DecorationImage(
-            //   image: AssetImage(
-            //     'assets/placeholder_profile.png',
-            //   ), // Replace with actual asset
-            //   fit: BoxFit.cover,
-            // ),
+            borderRadius: BorderRadius.circular(12),
+            image: const DecorationImage(
+              image: AssetImage(
+                'assets/images/profile_image.png',
+              ), // Replace with actual asset
+              fit: BoxFit.cover,
+            ),
           ),
-          child: const Icon(Icons.person, color: Colors.purple),
         ),
         const SizedBox(width: 12),
         Column(
@@ -414,44 +414,6 @@ class _PriceGrid extends StatelessWidget {
       itemBuilder: (context, index) {
         return _PriceCard(data: priceData[index]);
       },
-    );
-  }
-}
-
-/// 5. Simplified Bottom Navigation Bar
-class _BottomNavBar extends StatelessWidget {
-  const _BottomNavBar();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            spreadRadius: 1,
-            blurRadius: 5,
-            offset: const Offset(0, -3),
-          ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 60),
-        child: BottomNavigationBar(
-          elevation: 0,
-          backgroundColor: Colors.transparent,
-          currentIndex: 0,
-          selectedItemColor: AppColors.primary,
-          unselectedItemColor: Colors.grey,
-          showUnselectedLabels: true,
-          type: BottomNavigationBarType.fixed,
-          items: const [
-            BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-            BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
-          ],
-        ),
-      ),
     );
   }
 }
