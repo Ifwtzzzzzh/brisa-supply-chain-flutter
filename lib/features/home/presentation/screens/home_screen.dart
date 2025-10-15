@@ -1,8 +1,9 @@
 // ignore_for_file: deprecated_member_use
 
-import 'package:brisa_supply_chain/core/usecases/colors.dart';
+import 'package:brisa_supply_chain/features/home/data/repositories/tflite_services.dart';
 import 'package:brisa_supply_chain/features/home/presentation/widgets/bottom_nav_widget.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 // --- Models (Simplified for this example) ---
 
@@ -30,7 +31,7 @@ class PriceData {
 
 // --- Main Screen Widget ---
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
   // Dummy data to match the screenshot
@@ -71,6 +72,67 @@ class HomeScreen extends StatelessWidget {
   ];
 
   @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  final TfliteServices _tfliteService = TfliteServices();
+  String _predictionResult = 'Tekan tombol untuk prediksi...';
+  Map<String, String> _predictedPrices = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _tfliteService.loadModel();
+  }
+
+  final List<double> dummyInput = [
+    0.1,
+    0.5,
+    0.3,
+    0.8,
+    0.2,
+  ]; // Sesuai jumlah fitur model lo!
+
+  void _runPrediction() async {
+    setState(() {
+      _predictionResult = 'Sedang memproses...';
+    });
+
+    try {
+      final results = await _tfliteService.predictNextMonth(dummyInput);
+      final predictedValue = results[0];
+
+      // Asumsi: Model memprediksi harga untuk komoditas pertama (Beras Premium)
+      // Kita format hasilnya sebagai Rupiah
+      final formatter = NumberFormat.currency(
+        locale: 'id_ID',
+        symbol: 'Rp. ',
+        decimalDigits: 0,
+      );
+      final predictedPriceFormatted = formatter.format(predictedValue);
+
+      setState(() {
+        // Tampilkan hasil prediksi dengan asumsi ini adalah prediksi Beras Premium
+        _predictionResult =
+            'Prediksi Beras Premium (1 Bulan): $predictedPriceFormatted';
+      });
+    } catch (e) {
+      setState(() {
+        _predictionResult = 'Error TFLite: Gagal menjalankan prediksi.';
+        print('Error running prediction: $e');
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    // Bersihkan interpreter saat widget dihapus
+    _tfliteService.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -90,7 +152,7 @@ class HomeScreen extends StatelessWidget {
               const SizedBox(height: 16),
 
               // 2. Index Cards Section
-              _IndexCardRow(data: indexData),
+              _IndexCardRow(data: HomeScreen.indexData),
               const SizedBox(height: 24),
 
               // 3. Trending Section (Text + Chips)
@@ -98,7 +160,7 @@ class HomeScreen extends StatelessWidget {
               const SizedBox(height: 24),
 
               // 4. Harga Terkini Header
-              const Text(
+              Text(
                 'Harga Terkini 💳',
                 style: TextStyle(
                   fontSize: 20,
@@ -107,9 +169,13 @@ class HomeScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 12),
+              ElevatedButton(
+                onPressed: _runPrediction,
+                child: Text('Dapatkan Prediksi'),
+              ),
 
               // 5. Price Cards Grid
-              _PriceGrid(priceData: priceData),
+              _PriceGrid(priceData: HomeScreen.priceData),
             ],
           ),
         ),
