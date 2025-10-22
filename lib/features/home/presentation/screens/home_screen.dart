@@ -83,6 +83,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    // Pastikan pemanggilan loadModel berada di dalam initState
     _tfliteService.loadModel();
   }
 
@@ -100,17 +101,12 @@ class _HomeScreenState extends State<HomeScreen> {
     });
 
     try {
-      final results = await _tfliteService.predictNextMonth(dummyInput);
-      final predictedValue = results[0];
+      // 🐛 PERBAIKAN UTAMA: predictNextMonth mengembalikan double, bukan List.
+      // Hapus akses array [0]
+      final predictedValue = await _tfliteService.predictNextMonth(dummyInput);
 
-      // Asumsi: Model memprediksi harga untuk komoditas pertama (Beras Premium)
-      // Kita format hasilnya sebagai Rupiah
-      final formatter = NumberFormat.currency(
-        locale: 'id_ID',
-        symbol: 'Rp. ',
-        decimalDigits: 0,
-      );
-      final predictedPriceFormatted = formatter.format(predictedValue);
+      // Format hasilnya menggunakan fungsi _formatPrice yang sudah Anda sediakan
+      final predictedPriceFormatted = _formatPrice(predictedValue);
 
       setState(() {
         // Tampilkan hasil prediksi dengan asumsi ini adalah prediksi Beras Premium
@@ -123,6 +119,16 @@ class _HomeScreenState extends State<HomeScreen> {
         print('Error running prediction: $e');
       });
     }
+  }
+
+  String _formatPrice(double price) {
+    final formatter = NumberFormat.currency(
+      locale: 'id_ID',
+      symbol: 'Rp. ',
+      // Nilai decimalDigits: 2 adalah untuk memastikan 2 angka di belakang koma
+      decimalDigits: 2,
+    );
+    return formatter.format(price);
   }
 
   @override
@@ -173,6 +179,20 @@ class _HomeScreenState extends State<HomeScreen> {
                 onPressed: _runPrediction,
                 child: Text('Dapatkan Prediksi'),
               ),
+
+              // 🟢 Tambahkan Text untuk menampilkan hasil prediksi
+              Padding(
+                padding: const EdgeInsets.only(top: 12.0),
+                child: Text(
+                  _predictionResult,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.blue.shade700,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
 
               // 5. Price Cards Grid
               _PriceGrid(priceData: HomeScreen.priceData),
