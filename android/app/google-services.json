@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "956518361767",
+    "project_id": "brisa-supply-chain",
+    "storage_bucket": "brisa-supply-chain.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:956518361767:android:6031860e86d859f9880982",
+        "android_client_info": {
+          "package_name": "com.example.brisa_supply_chain"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "956518361767-bhn1i9uuivhpmkruhdftvv1hiucff39q.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.brisa_supply_chain",
+            "certificate_hash": "7d1f8b573842368769dcdb921d0c3922e4ca5525"
+          }
+        },
+        {
+          "client_id": "956518361767-sps2de4re5dr57e7smbke5r83r0b1mds.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDY5BCpjobQ6NM2oovgdO8zyqVqUHkRmG8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "956518361767-sps2de4re5dr57e7smbke5r83r0b1mds.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
