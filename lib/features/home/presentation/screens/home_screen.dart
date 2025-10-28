@@ -1,6 +1,7 @@
 // ignore_for_file: deprecated_member_use
 
 import 'package:brisa_supply_chain/features/home/data/repositories/tflite_services.dart';
+import 'package:brisa_supply_chain/features/home/presentation/screens/home_dummy_2.dart';
 import 'package:brisa_supply_chain/features/home/presentation/widgets/bottom_nav_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -29,12 +30,16 @@ class PriceData {
   PriceData({required this.name, required this.price, required this.change});
 }
 
+// CommodityData HARUS DIIMPOR DARI TFLITE_SERVICES
+// atau didefinisikan di sini jika tidak bisa diimpor.
+// Asumsi sudah diimpor.
+
 // --- Main Screen Widget ---
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
-  // Dummy data to match the screenshot
+  // ... (Static Dummy data tetap sama)
   static final List<IndexData> indexData = [
     IndexData(
       title: 'IHK',
@@ -77,14 +82,35 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final TfliteServices _tfliteService = TfliteServices();
-  String _predictionResult = 'Tekan tombol untuk prediksi...';
-  Map<String, String> _predictedPrices = {};
+
+  // 🟢 STATE BARU UNTUK HARGA CSV
+  String _csvPriceResult = 'Memuat harga Beras Super I (CSV)...';
+
+  // CommodityData? _berasSuper1Data; // Tidak perlu disimpan sebagai state, cukup String result
 
   @override
   void initState() {
     super.initState();
-    // Pastikan pemanggilan loadModel berada di dalam initState
+    // Panggil kedua inisialisasi
     _tfliteService.loadModel();
+    _loadBerasCsvPrice(); // 🟢 Panggil fungsi pemuatan harga CSV
+  }
+
+  // 🟢 FUNGSI BARU UNTUK MEMUAT HARGA CSV
+  void _loadBerasCsvPrice() {
+    // Panggil fungsi getBerasKualitasSuper1() dari service lo
+    final berasData = _tfliteService.getBerasKualitasSuper1();
+
+    setState(() {
+      if (berasData != null) {
+        // Ambil harga dan format ke 2 desimal
+        final formattedPrice = _formatPrice(berasData.predNextMonthPrice);
+        _csvPriceResult =
+            'Prediksi CSV Beras Kualitas Super I (Cluster ${berasData.cluster}): $formattedPrice';
+      } else {
+        _csvPriceResult = 'Data Beras Kualitas Super I tidak ditemukan di CSV.';
+      }
+    });
   }
 
   final List<double> dummyInput = [
@@ -95,45 +121,17 @@ class _HomeScreenState extends State<HomeScreen> {
     0.2,
   ]; // Sesuai jumlah fitur model lo!
 
-  void _runPrediction() async {
-    setState(() {
-      _predictionResult = 'Sedang memproses...';
-    });
-
-    try {
-      // 🐛 PERBAIKAN UTAMA: predictNextMonth mengembalikan double, bukan List.
-      // Hapus akses array [0]
-      final predictedValue = await _tfliteService.predictNextMonth(dummyInput);
-
-      // Format hasilnya menggunakan fungsi _formatPrice yang sudah Anda sediakan
-      final predictedPriceFormatted = _formatPrice(predictedValue);
-
-      setState(() {
-        // Tampilkan hasil prediksi dengan asumsi ini adalah prediksi Beras Premium
-        _predictionResult =
-            'Prediksi Beras Premium (1 Bulan): $predictedPriceFormatted';
-      });
-    } catch (e) {
-      setState(() {
-        _predictionResult = 'Error TFLite: Gagal menjalankan prediksi.';
-        print('Error running prediction: $e');
-      });
-    }
-  }
-
   String _formatPrice(double price) {
     final formatter = NumberFormat.currency(
       locale: 'id_ID',
       symbol: 'Rp. ',
-      // Nilai decimalDigits: 2 adalah untuk memastikan 2 angka di belakang koma
-      decimalDigits: 2,
+      decimalDigits: 2, // Nilai 2 untuk memastikan 2 angka di belakang koma
     );
     return formatter.format(price);
   }
 
   @override
   void dispose() {
-    // Bersihkan interpreter saat widget dihapus
     _tfliteService.dispose();
     super.dispose();
   }
@@ -142,7 +140,6 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        // The app bar shows the time and status icons (Simulated)
         toolbarHeight: 0,
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -167,7 +164,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
               // 4. Harga Terkini Header
               Text(
-                'Harga Terkini 💳',
+                'Harga & Prediksi 📈',
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -175,36 +172,55 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               const SizedBox(height: 12),
-              ElevatedButton(
-                onPressed: _runPrediction,
-                child: Text('Dapatkan Prediksi'),
-              ),
 
-              // 🟢 Tambahkan Text untuk menampilkan hasil prediksi
-              Padding(
-                padding: const EdgeInsets.only(top: 12.0),
+              // 🟢 TAMPILKAN HARGA CSV DI SINI
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.lightGreen.shade50,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.lightGreen.shade200),
+                ),
+                width: double.infinity,
                 child: Text(
-                  _predictionResult,
+                  _csvPriceResult,
                   style: TextStyle(
                     fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.blue.shade700,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.green.shade800,
                   ),
                 ),
               ),
               const SizedBox(height: 12),
 
-              // 5. Price Cards Grid
+              // 5. Tombol dan Hasil TFLite
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const HomeDummy2(), // ✅ BENAR
+                    ),
+                  );
+                },
+                child: Text('Jalankan Prediksi TFLite'),
+              ),
+
+              const SizedBox(height: 12),
+
+              // 6. Price Cards Grid
               _PriceGrid(priceData: HomeScreen.priceData),
             ],
           ),
         ),
       ),
-      // 6. Bottom Navigation Bar (Simplified)
+      // 7. Bottom Navigation Bar (Simplified)
       bottomNavigationBar: const BottomNavWidget(currentIndex: 0),
     );
   }
 }
+
+// ... (Component Widgets seperti _UserGreeting, _IndexCard, _PriceCard, dll. tetap sama)
 
 // --- Component Widgets ---
 

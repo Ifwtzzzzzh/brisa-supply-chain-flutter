@@ -5,129 +5,123 @@ import 'package:brisa_supply_chain/features/home/presentation/widgets/bottom_nav
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-// --- Models (Simplified for this example) ---
-
-class IndexData {
-  final String title;
-  final double value;
-  final double change;
-  final Color changeColor;
-
-  IndexData({
-    required this.title,
-    required this.value,
-    required this.change,
-    required this.changeColor,
-  });
-}
-
-class PriceData {
-  final String name;
-  final String price;
-  final double change;
-
-  PriceData({required this.name, required this.price, required this.change});
-}
-
 // --- Main Screen Widget ---
 
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
-
-  // Dummy data to match the screenshot
-  static final List<IndexData> indexData = [
-    IndexData(
-      title: 'IHK',
-      value: 108.57,
-      change: 0.046,
-      changeColor: Colors.green,
-    ),
-    IndexData(
-      title: 'IHPB',
-      value: 108.15,
-      change: 1.454,
-      changeColor: Colors.green,
-    ),
-    IndexData(
-      title: 'IHP',
-      value: 153.47,
-      change: 0.857,
-      changeColor: Colors.green,
-    ),
-    IndexData(
-      title: 'IHKP',
-      value: 122.69,
-      change: 0.097,
-      changeColor: Colors.green,
-    ),
-  ];
-
-  static final List<PriceData> priceData = [
-    PriceData(name: 'Beras Premium', price: 'Rp. 16,095', change: -0.86),
-    PriceData(name: 'Beras Medium', price: 'Rp. 13,997', change: -0.59),
-    PriceData(name: 'Bawang Merah', price: 'Rp. 46,868', change: -2.58),
-    PriceData(name: 'Bawang Putih', price: 'Rp. 37,558', change: -1.49),
-    PriceData(name: 'Cabai Merah Keriting', price: 'Rp. 40,532', change: -0.67),
-    PriceData(name: 'Cabai Merah Besar', price: 'Rp. 40,998', change: -1.45),
-  ];
+class HomeDummy2 extends StatefulWidget {
+  const HomeDummy2({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  State<HomeDummy2> createState() => _HomeDummy2State();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeDummy2State extends State<HomeDummy2> {
   final TfliteServices _tfliteService = TfliteServices();
-  String _predictionResult = 'Tekan tombol untuk prediksi...';
-  Map<String, String> _predictedPrices = {};
+  bool _isLoading = false;
+  CommodityData? _berasSuper1Data;
+  CommodityData? _predictedData;
+  String _errorMessage = '';
+
+  // Feature data untuk prediksi (sesuaikan dengan model Anda)
+  // Contoh: [harga_historis, inflasi, ihk, ihpb, seasonality, dll]
+  final List<double> _features = [
+    16500.0, // Feature 1: Harga bulan ini
+    0.5, // Feature 2: Contoh fitur lainnya
+    0.3, // Feature 3
+    0.8, // Feature 4
+    0.2, // Feature 5
+  ];
 
   @override
   void initState() {
     super.initState();
-    _tfliteService.loadModel();
+    _initializeData();
   }
 
-  final List<double> dummyInput = [
-    0.1,
-    0.5,
-    0.3,
-    0.8,
-    0.2,
-  ]; // Sesuai jumlah fitur model lo!
-
-  void _runPrediction() async {
+  Future<void> _initializeData() async {
     setState(() {
-      _predictionResult = 'Sedang memproses...';
+      _isLoading = true;
+      _errorMessage = '';
     });
 
     try {
-      final results = await _tfliteService.predictNextMonth(dummyInput);
-      final predictedValue = results[0];
+      // Load TFLite model
+      await _tfliteService.loadModel();
 
-      // Asumsi: Model memprediksi harga untuk komoditas pertama (Beras Premium)
-      // Kita format hasilnya sebagai Rupiah
-      final formatter = NumberFormat.currency(
-        locale: 'id_ID',
-        symbol: 'Rp. ',
-        decimalDigits: 0,
-      );
-      final predictedPriceFormatted = formatter.format(predictedValue);
+      // Get Beras Kualitas Super I data dari CSV
+      final berasData = _tfliteService.getBerasKualitasSuper1();
 
-      setState(() {
-        // Tampilkan hasil prediksi dengan asumsi ini adalah prediksi Beras Premium
-        _predictionResult =
-            'Prediksi Beras Premium (1 Bulan): $predictedPriceFormatted';
-      });
+      if (berasData != null) {
+        setState(() {
+          _berasSuper1Data = berasData;
+        });
+        print('✅ Data Beras Kualitas Super I dimuat');
+        print('📦 Harga prediksi CSV: Rp. ${berasData.predNextMonthPrice}');
+      } else {
+        throw Exception('Data Beras Kualitas Super I tidak ditemukan');
+      }
     } catch (e) {
       setState(() {
-        _predictionResult = 'Error TFLite: Gagal menjalankan prediksi.';
-        print('Error running prediction: $e');
+        _errorMessage = 'Error saat inisialisasi: $e';
+      });
+      print('❌ Initialization error: $e');
+    } finally {
+      setState(() {
+        _isLoading = false;
       });
     }
   }
 
+  Future<void> _runTflitePrediction() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = '';
+    });
+
+    try {
+      // Jalankan prediksi menggunakan TFLite model
+      final predictedData = await _tfliteService.predictBerasKualitasSuper1(
+        _features,
+      );
+
+      if (predictedData != null) {
+        setState(() {
+          _predictedData = predictedData;
+        });
+        print('✅ Prediksi TFLite berhasil');
+        print(
+          '🎯 Harga prediksi TFLite: Rp. ${predictedData.predNextMonthPrice}',
+        );
+      } else {
+        throw Exception('Gagal mendapatkan prediksi dari model');
+      }
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'Error saat prediksi: $e';
+      });
+      print('❌ Prediction error: $e');
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  String _formatPrice(double price) {
+    final formatter = NumberFormat.currency(
+      locale: 'id_ID',
+      symbol: 'Rp. ',
+      decimalDigits: 0,
+    );
+    return formatter.format(price);
+  }
+
+  String _formatDate(DateTime date) {
+    final formatter = DateFormat('dd MMMM yyyy', 'id_ID');
+    return formatter.format(date);
+  }
+
   @override
   void dispose() {
-    // Bersihkan interpreter saat widget dihapus
     _tfliteService.dispose();
     super.dispose();
   }
@@ -136,7 +130,6 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        // The app bar shows the time and status icons (Simulated)
         toolbarHeight: 0,
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -147,338 +140,566 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              // 1. User/Greeting Section
-              const _UserGreeting(),
               const SizedBox(height: 16),
 
-              // 2. Index Cards Section
-              _IndexCardRow(data: HomeScreen.indexData),
+              // Header
+              _buildHeader(),
+
               const SizedBox(height: 24),
 
-              // 3. Trending Section (Text + Chips)
-              const _TrendingSection(),
-              const SizedBox(height: 24),
+              // Main Content
+              if (_isLoading)
+                _buildLoadingCard()
+              else if (_errorMessage.isNotEmpty)
+                _buildErrorCard()
+              else
+                _buildContentCards(),
+            ],
+          ),
+        ),
+      ),
+      bottomNavigationBar: const BottomNavWidget(currentIndex: 0),
+    );
+  }
 
-              // 4. Harga Terkini Header
+  Widget _buildHeader() {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: Colors.blue.shade700,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Icon(Icons.analytics_outlined, color: Colors.white, size: 28),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
               Text(
-                'Harga Terkini 💳',
+                'Prediksi Harga Komoditas',
                 style: TextStyle(
-                  fontSize: 20,
+                  fontSize: 22,
                   fontWeight: FontWeight.bold,
                   color: Colors.black87,
                 ),
               ),
-              const SizedBox(height: 12),
-              ElevatedButton(
-                onPressed: _runPrediction,
-                child: Text('Dapatkan Prediksi'),
+              Text(
+                'Beras Kualitas Super I',
+                style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
               ),
-
-              // 5. Price Cards Grid
-              _PriceGrid(priceData: HomeScreen.priceData),
             ],
           ),
-        ),
-      ),
-      // 6. Bottom Navigation Bar (Simplified)
-      bottomNavigationBar: const BottomNavWidget(currentIndex: 0),
-    );
-  }
-}
-
-// --- Component Widgets ---
-
-/// 1. User/Greeting Section
-class _UserGreeting extends StatelessWidget {
-  const _UserGreeting();
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        // Profile Picture Placeholder
-        Container(
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(
-            color: Colors.purple.shade100,
-            borderRadius: BorderRadius.circular(12),
-            image: const DecorationImage(
-              image: AssetImage(
-                'assets/images/profile_image.png',
-              ), // Replace with actual asset
-              fit: BoxFit.cover,
-            ),
-          ),
-        ),
-        const SizedBox(width: 12),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: const [
-            Text(
-              'Hello Yuhaaa ~',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-            ),
-            Text(
-              'Selamat datang, Yuhaaa 🤝',
-              style: TextStyle(fontSize: 14, color: Colors.grey),
-            ),
-          ],
         ),
       ],
     );
   }
-}
 
-/// 2. Reusable Index Card Widget
-class _IndexCard extends StatelessWidget {
-  final IndexData data;
-
-  const _IndexCard({required this.data});
-
-  @override
-  Widget build(BuildContext context) {
-    // The main color of the card is a very light purple
-    const Color cardColor = Color(0xFFF3EDF5);
-    final isPositive = data.change > 0;
-    final changeIcon = isPositive ? Icons.arrow_upward : Icons.arrow_downward;
-    final changeColor =
-        isPositive ? Colors.green.shade600 : Colors.red.shade600;
-
-    return Expanded(
+  Widget _buildLoadingCard() {
+    return Card(
+      elevation: 3,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Container(
-        padding: const EdgeInsets.all(8),
-        margin: const EdgeInsets.symmetric(horizontal: 4),
-        decoration: BoxDecoration(
-          color: cardColor,
-          borderRadius: BorderRadius.circular(12),
+        padding: const EdgeInsets.all(32.0),
+        child: Column(
+          children: [
+            CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(Colors.blue.shade700),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Memuat data dan model AI...',
+              style: TextStyle(fontSize: 16, color: Colors.grey.shade700),
+            ),
+          ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildErrorCard() {
+    return Card(
+      elevation: 3,
+      color: Colors.red.shade50,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          children: [
+            Icon(Icons.error_outline, color: Colors.red.shade700, size: 48),
+            const SizedBox(height: 12),
+            Text(
+              'Terjadi Kesalahan',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.red.shade700,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              _errorMessage,
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 14, color: Colors.red.shade600),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton.icon(
+              onPressed: _initializeData,
+              icon: Icon(Icons.refresh),
+              label: Text('Coba Lagi'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red.shade700,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildContentCards() {
+    return Column(
+      children: [
+        // CSV Data Card
+        if (_berasSuper1Data != null) _buildCsvDataCard(_berasSuper1Data!),
+
+        const SizedBox(height: 16),
+
+        // TFLite Prediction Card
+        if (_predictedData != null) _buildPredictionCard(_predictedData!),
+
+        const SizedBox(height: 24),
+
+        // Action Buttons
+        _buildActionButtons(),
+
+        const SizedBox(height: 24),
+
+        // Info Card
+        _buildInfoCard(),
+      ],
+    );
+  }
+
+  Widget _buildCsvDataCard(CommodityData data) {
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          gradient: LinearGradient(
+            colors: [Colors.green.shade600, Colors.green.shade400],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Icon(Icons.storage, color: Colors.white, size: 28),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Data CSV',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white.withOpacity(0.9),
+                          ),
+                        ),
+                        Text(
+                          data.commodity,
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      'Cluster ${data.cluster}',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              Container(height: 1, color: Colors.white.withOpacity(0.3)),
+              const SizedBox(height: 20),
+              Text(
+                'Prediksi Harga (CSV)',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.white.withOpacity(0.9),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                _formatPrice(data.predNextMonthPrice),
+                style: TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                  letterSpacing: 1.0,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPredictionCard(CommodityData data) {
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          gradient: LinearGradient(
+            colors: [Colors.blue.shade600, Colors.blue.shade400],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Icon(
+                      Icons.psychology,
+                      color: Colors.white,
+                      size: 28,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Prediksi TFLite AI',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white.withOpacity(0.9),
+                          ),
+                        ),
+                        Text(
+                          data.commodity,
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      'Cluster ${data.cluster}',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              Container(height: 1, color: Colors.white.withOpacity(0.3)),
+              const SizedBox(height: 20),
+              Text(
+                'Prediksi Harga (AI)',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.white.withOpacity(0.9),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                _formatPrice(data.predNextMonthPrice),
+                style: TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                  letterSpacing: 1.0,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Icon(
+                    Icons.calendar_today_outlined,
+                    size: 16,
+                    color: Colors.white.withOpacity(0.8),
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    'Diperbarui: ${_formatDate(DateTime.now())}',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.white.withOpacity(0.8),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildActionButtons() {
+    return Column(
+      children: [
+        // Run Prediction Button
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton.icon(
+            onPressed: _isLoading ? null : _runTflitePrediction,
+            icon: Icon(Icons.play_arrow),
+            label: Text(
+              _predictedData == null
+                  ? 'Jalankan Prediksi AI'
+                  : 'Perbarui Prediksi AI',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.blue.shade700,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
+        // View All Commodities Button
+        SizedBox(
+          width: double.infinity,
+          child: OutlinedButton.icon(
+            onPressed: () => _showAllCommodities(),
+            icon: Icon(Icons.list_alt),
+            label: Text(
+              'Lihat Semua Komoditas',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+            ),
+            style: OutlinedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              side: BorderSide(color: Colors.blue.shade700, width: 2),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildInfoCard() {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              data.title,
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-                color: Colors.grey.shade700,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              data.value.toStringAsFixed(2),
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
-              ),
-            ),
-            const SizedBox(height: 4),
             Row(
               children: [
-                Icon(changeIcon, size: 14, color: changeColor),
-                const SizedBox(width: 4),
-                Text(
-                  '${data.change.abs().toStringAsFixed(3)}%',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: changeColor,
-                    fontWeight: FontWeight.w500,
+                Icon(Icons.info_outline, color: Colors.blue.shade700, size: 24),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'Informasi Prediksi',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
                   ),
                 ),
               ],
             ),
+            const SizedBox(height: 12),
+            Text(
+              '• Data CSV: Prediksi harga dari dataset historis\n'
+              '• Prediksi AI: Menggunakan model TensorFlow Lite\n'
+              '• Cluster: Pengelompokan komoditas berdasarkan karakteristik',
+              style: TextStyle(
+                fontSize: 13,
+                color: Colors.grey.shade700,
+                height: 1.5,
+              ),
+            ),
           ],
         ),
       ),
     );
   }
-}
 
-/// Index Card Row Layout
-class _IndexCardRow extends StatelessWidget {
-  final List<IndexData> data;
+  void _showAllCommodities() {
+    final allCommodities = _tfliteService.getAllCommodities();
 
-  const _IndexCardRow({required this.data});
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: data.map((d) => _IndexCard(data: d)).toList(),
-    );
-  }
-}
-
-/// 3. Trending Section
-class _TrendingSection extends StatelessWidget {
-  const _TrendingSection();
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Trending 🔥',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: Colors.black87,
-          ),
-        ),
-        const SizedBox(height: 12),
-        SizedBox(
-          height: 40,
-          child: ListView(
-            scrollDirection: Axis.horizontal,
-            children: [
-              _TrendingChip(text: 'Apa update harga sembako hari ini??'),
-              const SizedBox(width: 8),
-              _TrendingChip(text: 'Apa peluang usaha hari'),
-              const SizedBox(width: 8),
-              _TrendingChip(text: 'Trending lainnya...'), // Add more chips
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-/// Trending Chip Widget
-class _TrendingChip extends StatelessWidget {
-  final String text;
-
-  const _TrendingChip({required this.text});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      alignment: Alignment.center,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF3EDF5), // Light background color for the chip
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.grey.shade300),
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      child: Text(
-        text,
-        style: const TextStyle(fontSize: 14, color: Colors.black87),
-      ),
-    );
-  }
-}
-
-/// 4. Price Card Reusable Widget
-class _PriceCard extends StatelessWidget {
-  final PriceData data;
-
-  const _PriceCard({required this.data});
-
-  @override
-  Widget build(BuildContext context) {
-    final isPositive = data.change > 0;
-    final changeIcon = isPositive ? Icons.arrow_upward : Icons.arrow_downward;
-    final changeColor =
-        isPositive ? Colors.green.shade600 : Colors.red.shade600;
-
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            spreadRadius: 1,
-            blurRadius: 5,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            data.name,
-            style: const TextStyle(fontSize: 14, color: Colors.black54),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            data.price,
-            style: const TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: Colors.black87,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Row(
-            children: [
-              Text(
-                '${data.change.toStringAsFixed(2)}%',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: changeColor,
-                  fontWeight: FontWeight.w600,
+      builder: (context) {
+        return DraggableScrollableSheet(
+          initialChildSize: 0.7,
+          minChildSize: 0.5,
+          maxChildSize: 0.95,
+          expand: false,
+          builder: (context, scrollController) {
+            return Column(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.shade700,
+                    borderRadius: BorderRadius.vertical(
+                      top: Radius.circular(20),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.list, color: Colors.white),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          'Semua Komoditas (${allCommodities.length})',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        icon: Icon(Icons.close, color: Colors.white),
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(width: 4),
-              Icon(changeIcon, size: 14, color: changeColor),
-            ],
-          ),
-          const SizedBox(height: 8),
-          // Simplified graph placeholder using a Container and gradient
-          Expanded(
-            child: Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(8),
-                gradient: LinearGradient(
-                  colors: [
-                    Colors.purple.shade100.withOpacity(0.5),
-                    Colors.purple.shade50.withOpacity(0.2),
-                  ],
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
+                Expanded(
+                  child: ListView.builder(
+                    controller: scrollController,
+                    padding: const EdgeInsets.all(16),
+                    itemCount: allCommodities.length,
+                    itemBuilder: (context, index) {
+                      final commodity = allCommodities[index];
+                      return Card(
+                        margin: const EdgeInsets.only(bottom: 12),
+                        child: ListTile(
+                          leading: CircleAvatar(
+                            backgroundColor:
+                                commodity.cluster == 0
+                                    ? Colors.green.shade100
+                                    : Colors.orange.shade100,
+                            child: Text(
+                              '${index + 1}',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color:
+                                    commodity.cluster == 0
+                                        ? Colors.green.shade700
+                                        : Colors.orange.shade700,
+                              ),
+                            ),
+                          ),
+                          title: Text(
+                            commodity.commodity,
+                            style: TextStyle(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 14,
+                            ),
+                          ),
+                          subtitle: Text(
+                            'Cluster ${commodity.cluster}',
+                            style: TextStyle(fontSize: 12),
+                          ),
+                          trailing: Text(
+                            _formatPrice(commodity.predNextMonthPrice),
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                              color: Colors.blue.shade700,
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
                 ),
-              ),
-              // In a real app, this would be a custom painter or a chart library widget (e.g., fl_chart)
-              child: const Center(
-                child: Text(
-                  'Chart Placeholder',
-                  style: TextStyle(fontSize: 10, color: Colors.purple),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Price Grid Layout
-class _PriceGrid extends StatelessWidget {
-  final List<PriceData> priceData;
-
-  const _PriceGrid({required this.priceData});
-
-  @override
-  Widget build(BuildContext context) {
-    return GridView.builder(
-      shrinkWrap: true, // Important for nested scroll views
-      physics: const NeverScrollableScrollPhysics(), // Disable grid scrolling
-      itemCount: priceData.length,
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        crossAxisSpacing: 12.0,
-        mainAxisSpacing: 12.0,
-        childAspectRatio:
-            0.85, // Adjust to control card height relative to width
-      ),
-      itemBuilder: (context, index) {
-        return _PriceCard(data: priceData[index]);
+              ],
+            );
+          },
+        );
       },
     );
   }
