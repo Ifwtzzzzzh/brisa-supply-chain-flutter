@@ -1,5 +1,7 @@
 import 'package:brisa_supply_chain/core/usecases/colors.dart';
+import 'package:brisa_supply_chain/features/auth/domain/usecases/firebase_auth.dart';
 import 'package:brisa_supply_chain/features/auth/presentation/screens/signup_screen.dart';
+import 'package:brisa_supply_chain/features/home/presentation/screens/home_screen.dart';
 import 'package:flutter/material.dart';
 
 class SigninScreen extends StatefulWidget {
@@ -13,12 +15,76 @@ class _SigninScreenState extends State<SigninScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool _obscurePassword = true;
+  final AuthService _authService = AuthService();
+
+  bool _isLoading = false; // <-- 1. ADD LOADING STATE VARIABLE
 
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+
+  // <-- 2. CREATE A FUNCTION FOR EMAIL SIGN-IN
+  Future<void> _signInWithEmail() async {
+    // Don't do anything if we are already loading
+    if (_isLoading) return;
+
+    // Hide keyboard
+    FocusScope.of(context).unfocus();
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      // Call the AuthService function
+      await _authService.signInWithEmailPassword(
+        _emailController.text,
+        _passwordController.text,
+      );
+      // On success, the AuthWrapper/Stream will handle navigation
+      // We don't need to set _isLoading = false, as the widget will unmount
+    } catch (e) {
+      // If sign-in fails, stop loading and show an error
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to sign in: ${e.toString()}')),
+        );
+      }
+    }
+  }
+
+  // <-- 3. CREATE A FUNCTION FOR GOOGLE SIGN-IN
+  Future<void> _signInWithGoogle() async {
+    if (_isLoading) return;
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      await _authService.signInWithGoogle();
+      Navigator.push(
+        // ignore: use_build_context_synchronously
+        context,
+        MaterialPageRoute<void>(builder: (context) => const HomeScreen()),
+      );
+    } catch (e) {
+      // If sign-in fails or is cancelled
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to sign in: ${e.toString()}')),
+        );
+      }
+    }
   }
 
   @override
@@ -32,7 +98,7 @@ class _SigninScreenState extends State<SigninScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Title
+                // ... (Your Title, Email, and Password fields are all perfect)
                 const Text(
                   'Sign In',
                   style: TextStyle(
@@ -154,7 +220,7 @@ class _SigninScreenState extends State<SigninScreen> {
                     // 3. Focused Border: Prominently visible when the user clicks/taps to type (focus)
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(
+                      borderSide: const BorderSide(
                         color: AppColors.primary,
                         width: 2.0, // Make it thicker to emphasize focus
                       ),
@@ -180,9 +246,9 @@ class _SigninScreenState extends State<SigninScreen> {
 
                 // Masuk Button
                 ElevatedButton(
-                  onPressed: () {
-                    // Handle sign in
-                  },
+                  // <-- 4. UPDATE THE 'onPressed' CALLBACK
+                  // Disable the button when loading
+                  onPressed: _isLoading ? null : _signInWithEmail,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFA855F7),
                     foregroundColor: Colors.white,
@@ -192,10 +258,24 @@ class _SigninScreenState extends State<SigninScreen> {
                     ),
                     elevation: 0,
                   ),
-                  child: const Text(
-                    'Masuk',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-                  ),
+                  // <-- 5. UPDATE THE CHILD TO SHOW A LOADER
+                  child:
+                      _isLoading
+                          ? const SizedBox(
+                            height: 22,
+                            width: 22,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,
+                            ),
+                          )
+                          : const Text(
+                            'Masuk',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                 ),
 
                 const SizedBox(height: 24),
@@ -222,14 +302,24 @@ class _SigninScreenState extends State<SigninScreen> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: IconButton(
-                        onPressed: () {
-                          // Handle Google sign in
-                        },
-                        icon: Image.asset(
-                          'assets/images/google_logo.png',
-                          width: 24,
-                          height: 24,
-                        ),
+                        // <-- 6. UPDATE GOOGLE 'onPressed'
+                        // Disable the button when loading
+                        onPressed: _isLoading ? null : _signInWithGoogle,
+                        // <-- 7. UPDATE THE ICON TO SHOW A LOADER
+                        icon:
+                            _isLoading
+                                ? const SizedBox(
+                                  width: 24,
+                                  height: 24,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 3,
+                                  ),
+                                )
+                                : Image.asset(
+                                  'assets/images/google_logo.png',
+                                  width: 24,
+                                  height: 24,
+                                ),
                         iconSize: 24,
                       ),
                     ),
@@ -245,9 +335,13 @@ class _SigninScreenState extends State<SigninScreen> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: IconButton(
-                        onPressed: () {
-                          // Handle Apple sign in
-                        },
+                        // <-- 8. DISABLE APPLE BUTTON WHILE LOADING
+                        onPressed:
+                            _isLoading
+                                ? null
+                                : () {
+                                  // Handle Apple sign in
+                                },
                         icon: const Icon(
                           Icons.apple,
                           size: 32,

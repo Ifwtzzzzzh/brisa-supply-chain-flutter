@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "98292228951",
+    "project_id": "fir-crud-9a990",
+    "storage_bucket": "fir-crud-9a990.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:98292228951:android:0b4bdf97d5ceb0d5639412",
+        "android_client_info": {
+          "package_name": "com.example.brisa_supply_chain"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDd60mA7MoZCx2Y65DjNi1mNyyb0YzZOxc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:98292228951:android:183558db67e54d66639412",
+        "android_client_info": {
+          "package_name": "com.example.firebase_integration"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDd60mA7MoZCx2Y65DjNi1mNyyb0YzZOxc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

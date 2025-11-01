@@ -1,4 +1,8 @@
+import 'package:brisa_supply_chain/features/auth/domain/usecases/auth_wrapper.dart';
+import 'package:brisa_supply_chain/features/auth/domain/usecases/firebase_auth.dart';
+import 'package:brisa_supply_chain/features/auth/presentation/screens/signin_screen.dart';
 import 'package:brisa_supply_chain/features/home/presentation/widgets/bottom_nav_widget.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 // ignore_for_file: deprecated_member_use
@@ -10,6 +14,7 @@ class ProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final User? user = FirebaseAuth.instance.currentUser;
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -32,14 +37,14 @@ class ProfileScreen extends StatelessWidget {
               const SizedBox(height: 40),
 
               // Name Field
-              const _ProfileField(label: 'Nama', value: 'Yuhaaaaaa'),
+              _ProfileField(
+                label: 'Nama',
+                value: user?.displayName ?? 'No Name',
+              ),
               const SizedBox(height: 24),
 
               // Email Field
-              const _ProfileField(
-                label: 'Email',
-                value: 'yuhahearts2hearts@gmail.com',
-              ),
+              _ProfileField(label: 'Email', value: user?.email ?? 'No Name'),
               const SizedBox(height: 40),
 
               // Logout Button
@@ -135,6 +140,7 @@ class _ProfileField extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         TextField(
+          enabled: false,
           keyboardType: TextInputType.emailAddress,
           decoration: InputDecoration(
             hintText: value,
@@ -210,6 +216,9 @@ class _LogoutButton extends StatelessWidget {
   }
 
   void _showLogoutDialog(BuildContext context) {
+    // <-- Instantiate AuthService
+    final AuthService authService = AuthService();
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -222,10 +231,17 @@ class _LogoutButton extends StatelessWidget {
               child: const Text('Batal'),
             ),
             TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                // Add your logout logic here
-                // e.g., Navigator.pushReplacementNamed(context, '/login');
+              onPressed: () async {
+                // <-- Make async
+                // <-- Sign out and pop context
+                Navigator.of(context).pop(); // Close dialog first
+                await authService.signOut();
+                Navigator.push(
+                  context,
+                  MaterialPageRoute<void>(
+                    builder: (context) => const SigninScreen(),
+                  ),
+                );
               },
               child: const Text('Logout'),
             ),

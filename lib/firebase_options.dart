@@ -41,54 +41,49 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyAXbPgqqwrFHSkA9RYYm9iCFEPRq1tV7aM',
-    appId: '1:956518361767:web:351cd97a718fc5f1880982',
-    messagingSenderId: '956518361767',
-    projectId: 'brisa-supply-chain',
-    authDomain: 'brisa-supply-chain.firebaseapp.com',
-    storageBucket: 'brisa-supply-chain.firebasestorage.app',
+    apiKey: 'AIzaSyApCIyME9LBSuptfwMOffJu0m4OJLOQfMY',
+    appId: '1:98292228951:web:78ab35d21090fc07639412',
+    messagingSenderId: '98292228951',
+    projectId: 'fir-crud-9a990',
+    authDomain: 'fir-crud-9a990.firebaseapp.com',
+    storageBucket: 'fir-crud-9a990.firebasestorage.app',
+    measurementId: 'G-KKGBYNQTJ2',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyDY5BCpjobQ6NM2oovgdO8zyqVqUHkRmG8',
-    appId: '1:956518361767:android:6031860e86d859f9880982',
-    messagingSenderId: '956518361767',
-    projectId: 'brisa-supply-chain',
-    storageBucket: 'brisa-supply-chain.firebasestorage.app',
+    apiKey: 'AIzaSyDd60mA7MoZCx2Y65DjNi1mNyyb0YzZOxc',
+    appId: '1:98292228951:android:0b4bdf97d5ceb0d5639412',
+    messagingSenderId: '98292228951',
+    projectId: 'fir-crud-9a990',
+    storageBucket: 'fir-crud-9a990.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyAqXFeZl4YQhJDscvUq15B9o7_7rydRFSk',
-    appId: '1:956518361767:ios:8dd7b5ecb2ba67ce880982',
-    messagingSenderId: '956518361767',
-    projectId: 'brisa-supply-chain',
-    storageBucket: 'brisa-supply-chain.firebasestorage.app',
-    androidClientId:
-        '956518361767-bhn1i9uuivhpmkruhdftvv1hiucff39q.apps.googleusercontent.com',
-    iosClientId:
-        '956518361767-oeg7o3nuhtfp4kmhlqlor1bn4jhck23u.apps.googleusercontent.com',
+    apiKey: 'AIzaSyDwTAvNc7eI9RLjPJbVViJT7NBenEgDhDA',
+    appId: '1:98292228951:ios:0636b9dea804863e639412',
+    messagingSenderId: '98292228951',
+    projectId: 'fir-crud-9a990',
+    storageBucket: 'fir-crud-9a990.firebasestorage.app',
     iosBundleId: 'com.example.brisaSupplyChain',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyAqXFeZl4YQhJDscvUq15B9o7_7rydRFSk',
-    appId: '1:956518361767:ios:8dd7b5ecb2ba67ce880982',
-    messagingSenderId: '956518361767',
-    projectId: 'brisa-supply-chain',
-    storageBucket: 'brisa-supply-chain.firebasestorage.app',
-    androidClientId:
-        '956518361767-bhn1i9uuivhpmkruhdftvv1hiucff39q.apps.googleusercontent.com',
-    iosClientId:
-        '956518361767-oeg7o3nuhtfp4kmhlqlor1bn4jhck23u.apps.googleusercontent.com',
+    apiKey: 'AIzaSyDwTAvNc7eI9RLjPJbVViJT7NBenEgDhDA',
+    appId: '1:98292228951:ios:0636b9dea804863e639412',
+    messagingSenderId: '98292228951',
+    projectId: 'fir-crud-9a990',
+    storageBucket: 'fir-crud-9a990.firebasestorage.app',
     iosBundleId: 'com.example.brisaSupplyChain',
   );
 
   static const FirebaseOptions windows = FirebaseOptions(
-    apiKey: 'AIzaSyAXbPgqqwrFHSkA9RYYm9iCFEPRq1tV7aM',
-    appId: '1:956518361767:web:ea1ffadda3efa87e880982',
-    messagingSenderId: '956518361767',
-    projectId: 'brisa-supply-chain',
-    authDomain: 'brisa-supply-chain.firebaseapp.com',
-    storageBucket: 'brisa-supply-chain.firebasestorage.app',
+    apiKey: 'AIzaSyC9DVXtuM7fYRaggJHAZ15-oPHXod5eFQY',
+    appId: '1:98292228951:web:ffadf1f01182716c639412',
+    messagingSenderId: '98292228951',
+    projectId: 'fir-crud-9a990',
+    authDomain: 'fir-crud-9a990.firebaseapp.com',
+    storageBucket: 'fir-crud-9a990.firebasestorage.app',
+    measurementId: 'G-BDWLVS0J4B',
   );
+
 }

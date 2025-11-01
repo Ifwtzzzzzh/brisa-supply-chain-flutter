@@ -1,132 +1,93 @@
-// import 'package:cloud_firestore/cloud_firestore.dart';
-// import 'package:firebase_auth/firebase_auth.dart';
-// import 'package:google_sign_in/google_sign_in.dart';
+import 'package:brisa_supply_chain/features/home/presentation/screens/home_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:flutter/foundation.dart' show kDebugMode;
 
-// /// 🔹 Class ini menangani seluruh proses autentikasi Firebase:
-// /// - Sign Up (Email/Password)
-// /// - Login (Email/Password)
-// /// - Login dengan Google
-// /// - Menyimpan data user ke Firestore
-// class FirebaseAuthService {
-//   final FirebaseAuth _auth = FirebaseAuth.instance;
-//   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+class AuthService {
+  // Create instances of Firebase Auth and Google Sign-In
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final GoogleSignIn _googleSignIn = GoogleSignIn.instance;
 
-//   /// 🔹 Registrasi akun baru dengan Email & Password
-//   Future<User?> signUpWithEmail({
-//     required String username,
-//     required String email,
-//     required String password,
-//   }) async {
-//     try {
-//       // Buat akun baru di Firebase Authentication
-//       final credential = await _auth.createUserWithEmailAndPassword(
-//         email: email,
-//         password: password,
-//       );
+  /// A stream that notifies about changes to the user's sign-in state.
+  Stream<User?> get authStateChanges => _auth.authStateChanges();
 
-//       final user = credential.user;
+  /// The currently signed-in user.
+  User? get currentUser => _auth.currentUser;
 
-//       // Simpan data user ke Firestore
-//       if (user != null) {
-//         await _firestore.collection('users').doc(user.uid).set({
-//           'uid': user.uid,
-//           'username': username,
-//           'email': email,
-//           'createdAt': FieldValue.serverTimestamp(),
-//           'signInMethod': 'email_password',
-//         });
-//       }
+  Future<User?> signInWithGoogle() async {
+    try {
+      // 1. Trigger the Google Sign-In authentication flow.
+      final GoogleSignInAccount googleUser = await _googleSignIn.authenticate();
 
-//       return user;
-//     } on FirebaseAuthException catch (e) {
-//       throw Exception(_handleAuthError(e));
-//     } catch (e) {
-//       throw Exception('Terjadi kesalahan: $e');
-//     }
-//   }
+      // 3. Obtain the authentication details from the Google user.
+      final GoogleSignInAuthentication googleAuth = googleUser.authentication;
 
-//   /// 🔹 Login dengan Email & Password
-//   Future<User?> signInWithEmail({
-//     required String email,
-//     required String password,
-//   }) async {
-//     try {
-//       final credential = await _auth.signInWithEmailAndPassword(
-//         email: email,
-//         password: password,
-//       );
-//       return credential.user;
-//     } on FirebaseAuthException catch (e) {
-//       throw Exception(_handleAuthError(e));
-//     }
-//   }
+      // 4. Create a new Firebase credential using the Google tokens.
+      final OAuthCredential credential = GoogleAuthProvider.credential(
+        // accessToken: googleAuth.,
+        idToken: googleAuth.idToken,
+      );
 
-//   /// 🔹 Login menggunakan akun Google
-//   Future<User?> signInWithGoogle() async {
-//     try {
-//       // Jalankan proses sign in dari Google
-//       final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
-//       if (googleUser == null) {
-//         throw Exception('Login Google dibatalkan pengguna');
-//       }
+      // 5. Sign in to Firebase with the credential.
+      final UserCredential userCredential = await _auth.signInWithCredential(
+        credential,
+      );
 
-//       final GoogleSignInAuthentication googleAuth =
-//           await googleUser.authentication;
+      // 6. Return the Firebase user.
+      return userCredential.user;
+    } on FirebaseAuthException catch (e) {
+      // Handle Firebase-specific errors
+      if (kDebugMode) {
+        print('Firebase Auth Exception during Google Sign-In: ${e.message}');
+      }
+      rethrow; // Re-throw the exception to be handled by the UI
+    } catch (e) {
+      // Handle other errors (e.g., network issues)
+      if (kDebugMode) {
+        print('An unexpected error occurred during Google Sign-In: $e');
+      }
+      rethrow;
+    }
+  }
 
-//       // Buat credential Firebase dari token Google
-//       final credential = GoogleAuthProvider.credential(
-//         accessToken: googleAuth.accessToken,
-//         idToken: googleAuth.idToken,
-//       );
+  /// Signs in the user with email and password.
+  Future<User?> signInWithEmailPassword(String email, String password) async {
+    try {
+      // 1. Sign in to Firebase with email and password.
+      final UserCredential userCredential = await _auth
+          .signInWithEmailAndPassword(
+            email: email.trim(), // .trim() removes any whitespace
+            password: password,
+          );
 
-//       // Login ke Firebase Authentication
-//       final userCredential = await _auth.signInWithCredential(credential);
-//       final user = userCredential.user;
+      // 2. Return the Firebase user.
+      return userCredential.user;
+    } on FirebaseAuthException catch (e) {
+      // Handle Firebase-specific errors
+      if (kDebugMode) {
+        print('Firebase Auth Exception during Email Sign-In: ${e.message}');
+      }
+      rethrow; // Re-throw the exception to be handled by the UI
+    } catch (e) {
+      // Handle other errors
+      if (kDebugMode) {
+        print('An unexpected error occurred during Email Sign-In: $e');
+      }
+      rethrow;
+    }
+  }
 
-//       // Cek apakah user baru
-//       if (userCredential.additionalUserInfo?.isNewUser ?? false) {
-//         await _firestore.collection('users').doc(user!.uid).set({
-//           'uid': user.uid,
-//           'username': user.displayName ?? 'User Baru',
-//           'email': user.email,
-//           'photoUrl': user.photoURL,
-//           'createdAt': FieldValue.serverTimestamp(),
-//           'signInMethod': 'google',
-//         });
-//       }
-
-//       return user;
-//     } on FirebaseAuthException catch (e) {
-//       throw Exception(_handleAuthError(e));
-//     } catch (e) {
-//       throw Exception('Login Google gagal: $e');
-//     }
-//   }
-
-//   /// 🔹 Logout
-//   Future<void> signOut() async {
-//     await GoogleSignIn().signOut();
-//     await _auth.signOut();
-//   }
-
-//   /// 🔹 Dapatkan user yang sedang login
-//   User? get currentUser => _auth.currentUser;
-
-//   /// 🔹 Private helper untuk translate error Firebase
-//   String _handleAuthError(FirebaseAuthException e) {
-//     switch (e.code) {
-//       case 'invalid-email':
-//         return 'Format email tidak valid.';
-//       case 'user-not-found':
-//         return 'Akun tidak ditemukan.';
-//       case 'wrong-password':
-//         return 'Password salah.';
-//       case 'email-already-in-use':
-//         return 'Email sudah terdaftar.';
-//       case 'weak-password':
-//         return 'Password terlalu lemah.';
-//       default:
-//         return e.message ?? 'Terjadi kesalahan tidak diketahui.';
-//     }
-//   }
-// }
+  Future<void> signOut() async {
+    try {
+      await _googleSignIn.signOut();
+      await _auth.signOut();
+      MaterialPageRoute<void>(builder: (context) => const HomeScreen());
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error during sign out: $e');
+      }
+      rethrow;
+    }
+  }
+}
