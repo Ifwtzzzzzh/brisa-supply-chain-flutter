@@ -1,35 +1,25 @@
 // ignore_for_file: deprecated_member_use
 
 import 'package:brisa_supply_chain/features/home/data/repositories/tflite_services.dart';
-import 'package:brisa_supply_chain/features/home/presentation/widgets/bottom_nav_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:logger/web.dart';
 
-// --- Main Screen Widget ---
-
-class HomeDummy2 extends StatefulWidget {
-  const HomeDummy2({super.key});
+class PredictionScreen extends StatefulWidget {
+  const PredictionScreen({super.key});
 
   @override
-  State<HomeDummy2> createState() => _HomeDummy2State();
+  State<PredictionScreen> createState() => _PredictionScreenState();
 }
 
-class _HomeDummy2State extends State<HomeDummy2> {
+class _PredictionScreenState extends State<PredictionScreen> {
   final TfliteServices _tfliteService = TfliteServices();
+  final _logger = Logger();
   bool _isLoading = false;
   CommodityData? _berasSuper1Data;
   CommodityData? _predictedData;
   String _errorMessage = '';
-
-  // Feature data untuk prediksi (sesuaikan dengan model Anda)
-  // Contoh: [harga_historis, inflasi, ihk, ihpb, seasonality, dll]
-  final List<double> _features = [
-    16500.0, // Feature 1: Harga bulan ini
-    0.5, // Feature 2: Contoh fitur lainnya
-    0.3, // Feature 3
-    0.8, // Feature 4
-    0.2, // Feature 5
-  ];
+  final List<double> _features = [16500.0, 0.5, 0.3, 0.8, 0.2];
 
   @override
   void initState() {
@@ -44,12 +34,8 @@ class _HomeDummy2State extends State<HomeDummy2> {
     });
 
     try {
-      // Load TFLite model
       await _tfliteService.loadModel();
-
-      // Get Beras Kualitas Super I data dari CSV
       final berasData = _tfliteService.getBerasKualitasSuper1();
-
       if (berasData != null) {
         setState(() {
           _berasSuper1Data = berasData;
@@ -130,9 +116,9 @@ class _HomeDummy2State extends State<HomeDummy2> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        toolbarHeight: 0,
         backgroundColor: Colors.transparent,
         elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.black87),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -158,7 +144,6 @@ class _HomeDummy2State extends State<HomeDummy2> {
           ),
         ),
       ),
-      bottomNavigationBar: const BottomNavWidget(currentIndex: 0),
     );
   }
 

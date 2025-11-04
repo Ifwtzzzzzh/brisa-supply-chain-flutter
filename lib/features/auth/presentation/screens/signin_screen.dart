@@ -2,6 +2,7 @@ import 'package:brisa_supply_chain/core/usecases/colors.dart';
 import 'package:brisa_supply_chain/features/auth/domain/usecases/firebase_auth.dart';
 import 'package:brisa_supply_chain/features/auth/presentation/screens/signup_screen.dart';
 import 'package:brisa_supply_chain/features/home/presentation/screens/home_screen.dart';
+import 'package:brisa_supply_chain/features/question/presentation/screens/question_screen.dart';
 import 'package:flutter/material.dart';
 
 class SigninScreen extends StatefulWidget {
@@ -72,7 +73,7 @@ class _SigninScreenState extends State<SigninScreen> {
       Navigator.push(
         // ignore: use_build_context_synchronously
         context,
-        MaterialPageRoute<void>(builder: (context) => const HomeScreen()),
+        MaterialPageRoute<void>(builder: (context) => const QuestionScreen()),
       );
     } catch (e) {
       // If sign-in fails or is cancelled

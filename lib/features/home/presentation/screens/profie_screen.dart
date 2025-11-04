@@ -1,4 +1,3 @@
-import 'package:brisa_supply_chain/features/auth/domain/usecases/auth_wrapper.dart';
 import 'package:brisa_supply_chain/features/auth/domain/usecases/firebase_auth.dart';
 import 'package:brisa_supply_chain/features/auth/presentation/screens/signin_screen.dart';
 import 'package:brisa_supply_chain/features/home/presentation/widgets/bottom_nav_widget.dart';

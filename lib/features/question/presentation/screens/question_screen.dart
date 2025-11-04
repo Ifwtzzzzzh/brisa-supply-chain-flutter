@@ -1,11 +1,16 @@
 // ignore_for_file: unnecessary_to_list_in_spreads, avoid_print
 
-import 'package:brisa_supply_chain/core/usecases/colors.dart';
+import 'package:brisa_supply_chain/core/usecases/colors.dart'; //
+import 'package:brisa_supply_chain/features/home/presentation/screens/home_screen.dart';
+import 'package:brisa_supply_chain/features/question/data/models/question_model.dart';
+import 'package:brisa_supply_chain/features/question/data/repositories/question_data.dart';
 import 'package:brisa_supply_chain/features/question/presentation/widgets/next_button_widget.dart';
 import 'package:brisa_supply_chain/features/question/presentation/widgets/options_button_widget.dart';
 import 'package:brisa_supply_chain/features/question/presentation/widgets/progress_header_widget.dart';
 import 'package:flutter/material.dart';
+import 'package:logger/web.dart';
 
+// Kita ganti nama jadi QuizScreen biar lebih jelas
 class QuestionScreen extends StatefulWidget {
   const QuestionScreen({super.key});
 
@@ -14,37 +19,57 @@ class QuestionScreen extends StatefulWidget {
 }
 
 class _QuestionScreenState extends State<QuestionScreen> {
-  // State to hold the currently selected option
-  String? _selectedProfession;
-  // Dummy list of options for the question
-  final List<String> _professionOptions = const [
-    'Pengusaha', // Entrepreneur
-    'Petani', // Farmer
-    'Pembeli', // Buyer/Customer
-    'Lain-lain', // Other
-  ];
+  // Ambil data pertanyaan dari file data terpisah
+  final List<QuestionModel> _questions = QuizData.questions;
+  final _logger = Logger(); // <-- TAMBAHKAN INI
+
+  // Ambil data pertanyaan dari file data terpisah
+
+  // State untuk tracking
+  int _currentQuestionIndex = 0;
+  // Map untuk menyimpan jawaban: <index pertanyaan, jawaban yg dipilih>
+  final Map<int, String> _answers = {};
 
   void _selectOption(String option) {
     setState(() {
-      _selectedProfession = option;
+      // Simpan jawaban untuk index saat ini
+      _answers[_currentQuestionIndex] = option;
     });
   }
 
   void _nextQuestion() {
-    // Logic to handle moving to the next question (Selanjutnya)
-    // For this example, we'll just print the selection.
-    print('Selected profession: $_selectedProfession');
-    // In a real app, you would navigate:
-    // Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => NextScreen()));
+    // Cek apakah ini pertanyaan terakhir
+    if (_currentQuestionIndex < _questions.length - 1) {
+      setState(() {
+        _currentQuestionIndex++; // Pindah ke pertanyaan selanjutnya
+      });
+    } else {
+      _logger.i('--- Quiz Selesai, Menavigasi ke Home ---');
+      _answers.forEach((index, answer) {
+        _logger.i('Q${index + 1}: $answer');
+      });
+
+      // Ganti navigasi ke HomeScreen
+      // Kita pakai 'pushReplacement' agar user tidak bisa back ke quiz
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (ctx) => const HomeScreen()),
+      );
+    }
+  }
+
+  // Helper untuk mendapatkan jawaban yg dipilih saat ini
+  String? get _selectedOptionForCurrentQuestion {
+    return _answers[_currentQuestionIndex];
   }
 
   @override
   Widget build(BuildContext context) {
-    // Get the size of the screen for responsive padding
     final screenHeight = MediaQuery.of(context).size.height;
+    // Ambil data pertanyaan saat ini secara dinamis
+    final QuestionModel currentQuestion = _questions[_currentQuestionIndex];
 
     return Scaffold(
-      backgroundColor: AppColors.primary, // Deep purple background
+      backgroundColor: AppColors.primary,
       body: SafeArea(
         child: Column(
           children: [
@@ -84,15 +109,20 @@ class _QuestionScreenState extends State<QuestionScreen> {
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        // Progress Bar & Counter (Total Pertanyaan 1/4)
-                        const ProgressHeaderWidget(current: 1, total: 4),
+                        // --- MULAI BAGIAN DINAMIS ---
+
+                        // Progress Bar & Counter (Dinamis)
+                        ProgressHeaderWidget(
+                          current: _currentQuestionIndex + 1, // Dinamis
+                          total: _questions.length, // Dinamis
+                        ),
                         const SizedBox(height: 30),
 
-                        // Question Text (Apa profesi anda ??)
-                        const Text(
-                          'Apa profesi anda ??',
+                        // Question Text (Dinamis)
+                        Text(
+                          currentQuestion.questionText, // Dinamis
                           textAlign: TextAlign.start,
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
                             color: Color(0xFF333333),
@@ -100,9 +130,11 @@ class _QuestionScreenState extends State<QuestionScreen> {
                         ),
                         const SizedBox(height: 30),
 
-                        // Options List
-                        ..._professionOptions.map((option) {
-                          final isSelected = _selectedProfession == option;
+                        // Options List (Dinamis)
+                        ...currentQuestion.options.map((option) {
+                          // Cek apakah opsi ini yg sedang dipilih
+                          final isSelected =
+                              _selectedOptionForCurrentQuestion == option;
                           return Padding(
                             padding: const EdgeInsets.only(bottom: 12.0),
                             child: OptionsButtonWidget(
@@ -111,15 +143,22 @@ class _QuestionScreenState extends State<QuestionScreen> {
                               onPressed: () => _selectOption(option),
                             ),
                           );
-                        }).toList(),
+                        }),
 
+                        // --- AKHIR BAGIAN DINAMIS ---
                         const Spacer(), // Pushes the next button to the bottom
                         // Next Button (Selanjutnya)
                         NextButtonWidget(
+                          // Aktifkan tombol jika ada jawaban yg dipilih
                           onPressed:
-                              _selectedProfession != null
+                              _selectedOptionForCurrentQuestion != null
                                   ? _nextQuestion
                                   : null,
+                          // Ganti teks tombol di pertanyaan terakhir
+                          text:
+                              _currentQuestionIndex == _questions.length - 1
+                                  ? 'Selesai'
+                                  : 'Selanjutnya',
                         ),
                       ],
                     ),

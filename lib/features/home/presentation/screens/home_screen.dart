@@ -1,7 +1,7 @@
 // ignore_for_file: deprecated_member_use
 
 import 'package:brisa_supply_chain/features/home/data/repositories/tflite_services.dart';
-import 'package:brisa_supply_chain/features/home/presentation/screens/home_dummy_2.dart';
+import 'package:brisa_supply_chain/features/home/presentation/screens/prediction_screen.dart';
 import 'package:brisa_supply_chain/features/home/presentation/widgets/bottom_nav_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -205,7 +205,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const HomeDummy2(), // ✅ BENAR
+                      builder: (context) => const PredictionScreen(), // ✅ BENAR
                     ),
                   );
                 },
