@@ -179,37 +179,33 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               const SizedBox(height: 12),
 
-              // 🟢 TAMPILKAN HARGA CSV DI SINI
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.lightGreen.shade50,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.lightGreen.shade200),
-                ),
-                width: double.infinity,
-                child: Text(
-                  _csvPriceResult,
-                  style: TextStyle(
+              ElevatedButton.icon(
+                icon: const Icon(Icons.analytics_outlined, size: 20),
+                label: const Text('Jalankan Prediksi TFLite'),
+                style: ElevatedButton.styleFrom(
+                  // Ganti dari biru ke ungu
+                  backgroundColor: Colors.purple.shade400,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 16,
+                  ),
+                  textStyle: const TextStyle(
                     fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.green.shade800,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.0),
                   ),
                 ),
-              ),
-              const SizedBox(height: 12),
-
-              // 5. Tombol dan Hasil TFLite
-              ElevatedButton(
                 onPressed: () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const PredictionScreen(), // ✅ BENAR
+                      builder: (context) => const PredictionScreen(),
                     ),
                   );
                 },
-                child: Text('Jalankan Prediksi TFLite'),
               ),
 
               const SizedBox(height: 12),

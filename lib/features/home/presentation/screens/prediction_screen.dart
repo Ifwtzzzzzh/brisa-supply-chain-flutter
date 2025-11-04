@@ -3,7 +3,7 @@
 import 'package:brisa_supply_chain/features/home/data/repositories/tflite_services.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:logger/web.dart';
+// import 'package:logger/web.dart';
 
 class PredictionScreen extends StatefulWidget {
   const PredictionScreen({super.key});
@@ -14,7 +14,7 @@ class PredictionScreen extends StatefulWidget {
 
 class _PredictionScreenState extends State<PredictionScreen> {
   final TfliteServices _tfliteService = TfliteServices();
-  final _logger = Logger();
+  // final _logger = Logger();
   bool _isLoading = false;
   CommodityData? _berasSuper1Data;
   CommodityData? _predictedData;
